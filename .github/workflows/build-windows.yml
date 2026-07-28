@@ -111,6 +111,12 @@ jobs:
           name: winmux-linux-x64
           path: ${{ github.workspace }}/app/src-tauri/resources
 
+      # The app crate is Windows-only (DPAPI, ConPTY), so this is the only job
+      # that can run its tests at all — the Linux one can't even compile it.
+      - name: Rust tests
+        working-directory: app/src-tauri
+        run: cargo test -p app --lib
+
       - name: Build + stage the Windows CLI
         working-directory: app/src-tauri
         shell: pwsh
