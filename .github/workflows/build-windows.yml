@@ -111,12 +111,6 @@ jobs:
           name: winmux-linux-x64
           path: ${{ github.workspace }}/app/src-tauri/resources
 
-      # The app crate is Windows-only (DPAPI, ConPTY), so this is the only job
-      # that can run its tests at all — the Linux one can't even compile it.
-      - name: Rust tests
-        working-directory: app/src-tauri
-        run: cargo test -p app --lib
-
       - name: Build + stage the Windows CLI
         working-directory: app/src-tauri
         shell: pwsh
@@ -156,6 +150,15 @@ jobs:
       - name: Stage LICENSE for the bundler
         shell: pwsh
         run: Copy-Item LICENSE app\src-tauri\LICENSE -Force
+
+      # The app crate is Windows-only (DPAPI, ConPTY), so this is the only job
+      # that can run its tests at all — the Linux one can't even compile it.
+      # Runs AFTER the resource staging above, not before: the crate's build
+      # script resolves tauri.conf.json's `resources` list, and a missing
+      # winmux-cli.exe fails the build before a single test compiles.
+      - name: Rust tests
+        working-directory: app/src-tauri
+        run: cargo test -p app --lib
 
       - run: npm ci
         working-directory: app
